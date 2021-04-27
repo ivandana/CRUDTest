@@ -6,7 +6,6 @@ const path = require("path");
 // Creating the Express server
 const app = express();
 
-// Connection to the PostgreSQL database
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -18,15 +17,9 @@ const pool = new Pool({
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
-app.use(express.urlencoded({ extended: false })); // <--- middleware configuration
+app.use(express.urlencoded({ extended: false }));
 
-//connecting to localhost 3000
-// app.listen(3000, () => {
-//     {
-//         console.log("Server started (http://localhost:3000/) !");
-//     }
-// });
-const listener = app.listen(process.env.PORT||3000, () => {
+const listener = app.listen(process.env.PORT, () => {
 console.log(`Your app is listening on port ${listener.address().port}`);
 });
 
