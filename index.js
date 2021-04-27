@@ -6,6 +6,12 @@ const path = require("path");
 // Creating the Express server
 const app = express();
 
+//Server configuration
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.urlencoded({ extended: false }));
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -13,11 +19,38 @@ const pool = new Pool({
   }
 });
 
-//Server configuration
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.urlencoded({ extended: false }));
+const sql_create = `CREATE TABLE IF NOT EXISTS Books (
+    Book_ID SERIAL PRIMARY KEY,
+    Title VARCHAR(100) NOT NULL,
+    Author VARCHAR(100) NOT NULL,
+    Comments TEXT
+  );`;
+  
+  pool.query(sql_create, [], (err, result) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log("Successful creation of the 'Books' table");
+
+     // Database seeding
+  const sql_insert = `INSERT INTO Books (Book_ID, Title, Author, Comments) VALUES
+  (1, 'Mrs. Bridge', 'Evan S. Connell', 'First in the serie'),
+  (2, 'Mr. Bridge', 'Evan S. Connell', 'Second in the serie'),
+  (3, 'L''ingénue libertine', 'Colette', 'Minne + Les égarements de Minne')
+    ON CONFLICT DO NOTHING;`;
+pool.query(sql_insert, [], (err, result) => {
+  if (err) {
+    return console.error(err.message);
+  }
+  const sql_sequence = "SELECT SETVAL('Books_Book_ID_Seq', MAX(Book_ID)) FROM Books;";
+  pool.query(sql_sequence, [], (err, result) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log("Successful creation of 3 books");
+     });    
+  });
+});
 
 const listener = app.listen(process.env.PORT, () => {
 console.log(`Your app is listening on port ${listener.address().port}`);
